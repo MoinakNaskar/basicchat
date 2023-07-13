@@ -1,5 +1,6 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'package:basicchat/constants/routes.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/cupertino.dart';
@@ -67,7 +68,7 @@ class _LoginViewState extends State<LoginView> {
                 );
 
                 Navigator.of(context).pushNamedAndRemoveUntil(
-                  '/notes/',
+                  noteRoute,
                   (route) => false,
                 );
                 devtools.log(UserCredential.toString());
@@ -84,7 +85,7 @@ class _LoginViewState extends State<LoginView> {
           TextButton(
             onPressed: () {
               Navigator.of(context).pushNamedAndRemoveUntil(
-                '/register/',
+                registerRoute,
                 (route) => false,
               );
             },
