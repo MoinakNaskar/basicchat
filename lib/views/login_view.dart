@@ -1,10 +1,12 @@
 // ignore_for_file: use_build_context_synchronously
 
+
 import 'package:basicchat/constants/routes.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:basicchat/services/auth/auth_exception.dart';
+import 'package:basicchat/services/auth/auth_service.dart';
+
 
 import 'package:flutter/material.dart';
-import 'dart:developer' as devtools show log;
 
 import '../utilities/show_error_dialog.dart';
 
@@ -35,39 +37,67 @@ class _LoginViewState extends State<LoginView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Login')),
+      appBar: AppBar(
+        title: const Text('Login'),
+        backgroundColor: Colors.black,
+      ),
+      backgroundColor: Colors.blueGrey,
       body: Column(
         children: [
-          TextField(
-            enableSuggestions: false,
-            autocorrect: false,
-            keyboardType: TextInputType.emailAddress,
-            controller: _email,
-            decoration: const InputDecoration(
-              hintText: 'Enter Your Email Here',
+          const SizedBox(
+            height: 60,
+          ),
+          const Text(
+            'MEMOW',
+            style: TextStyle(
+                color: Colors.black,
+                letterSpacing: 1,
+                fontSize: 50,
+                fontWeight: FontWeight.w900,
+                fontStyle: FontStyle.normal),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(15.0),
+            child: TextField(
+              enableSuggestions: false,
+              autocorrect: false,
+              keyboardType: TextInputType.emailAddress,
+              controller: _email,
+              decoration: const InputDecoration(
+                  hintText: 'Enter Your Email Here',
+                  prefixIcon: Icon(Icons.email),
+                  border: OutlineInputBorder(),
+                  hintStyle: TextStyle(color: Colors.black)),
             ),
           ),
-          TextField(
-            controller: _password,
-            obscureText: true,
-            enableSuggestions: false,
-            autocorrect: false,
-            decoration: const InputDecoration(
-              hintText: 'Enter Your Password Here',
+          Padding(
+            padding: const EdgeInsets.all(15.0),
+            child: TextField(
+              controller: _password,
+              obscureText: true,
+              enableSuggestions: false,
+              autocorrect: false,
+              decoration: const InputDecoration(
+                  hintText: 'Enter Your Password Here',
+                  prefixIcon: Icon(Icons.lock),
+                  border: OutlineInputBorder(),
+                  fillColor: Colors.black,
+                  hintStyle: TextStyle(color: Colors.black)),
             ),
+          ),
+          const SizedBox(
+            height: 30,
           ),
           TextButton(
             onPressed: () async {
               final email = _email.text;
               final password = _password.text;
               try {
-                final UserCredential =
-                    await FirebaseAuth.instance.signInWithEmailAndPassword(
-                  email: email,
-                  password: password,
-                );
-                final user = FirebaseAuth.instance.currentUser;
-                if (user?.emailVerified ?? false) {
+                await AuthService.firebase()
+                    .logIn(email: email, password: password);
+
+                final user = AuthService.firebase().currentUser;
+                if (user?.isEmailVerified ?? false) {
                   Navigator.of(context).pushNamedAndRemoveUntil(
                     noteRoute,
                     (route) => false,
@@ -76,21 +106,26 @@ class _LoginViewState extends State<LoginView> {
                   Navigator.of(context).pushNamedAndRemoveUntil(
                       VerifyEmailRoute, ((route) => false));
                 }
-
-                devtools.log(UserCredential.toString());
-              } on FirebaseAuthException catch (e) {
-                if (e.code == 'user-not-found') {
-                  await showErrorDialog(context, 'User-not-found');
-                } else if (e.code == 'wrong-password') {
-                  await showErrorDialog(context, 'Wrong credentials');
-                } else {
-                  await showErrorDialog(context, 'Error: ${e.code}');
-                }
-              } catch (e) {
-                await showErrorDialog(context, e.toString());
+              } on UserNotFoundAuthException {
+                await showErrorDialog(context, 'User-not-found');
+              } on WrongPasswordAuthException {
+                await showErrorDialog(context, 'Wrong credentials');
+              } on GanericAuthException {
+                await showErrorDialog(context, 'AuthenticationError');
               }
             },
-            child: const Text('Login'),
+            style: TextButton.styleFrom(
+                elevation: 5,
+                shadowColor: Colors.grey,
+                backgroundColor: Colors.black,
+                textStyle: const TextStyle(color: Colors.white)),
+            child: const Text(
+              'Login',
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+          const SizedBox(
+            height: 50,
           ),
           TextButton(
             onPressed: () {
@@ -99,7 +134,15 @@ class _LoginViewState extends State<LoginView> {
                 (route) => false,
               );
             },
-            child: const Text("Not register yet?Register here!"),
+            style: TextButton.styleFrom(
+              backgroundColor: Colors.black,
+              disabledForegroundColor: Colors.black.withOpacity(0.38),
+            ),
+            child: const Text("Not register yet?Register here!",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                )),
           ),
         ],
       ),

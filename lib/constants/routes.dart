@@ -1,4 +1,3 @@
-import 'package:basicchat/views/verify_email_view.dart';
 
 const loginRoute = '/login/';
 const registerRoute = '/register/';

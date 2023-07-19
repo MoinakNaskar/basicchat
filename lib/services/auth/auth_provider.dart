@@ -1,7 +1,7 @@
 import 'package:basicchat/services/auth/auth_user.dart';
-import 'package:flutter/material.dart';
 
 abstract class AuthProvider {
+  Future<void> initialized();
   AuthUser? get currentUser;
   Future<AuthUser?> logIn({
     required String email,
